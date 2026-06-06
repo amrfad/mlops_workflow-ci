@@ -55,7 +55,8 @@ jobs:
         run: |
           mlflow models build-docker \
             -m "runs:/${{ steps.get_run.outputs.run_id }}/model" \
-            -n "${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model"
+            -n "${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model" \
+            --env-manager=local
 
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model
