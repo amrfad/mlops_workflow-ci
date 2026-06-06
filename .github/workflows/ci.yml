@@ -1,0 +1,25 @@
+name: CI - Model Training
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.7'
+
+      - name: Install MLflow
+        run: pip install mlflow==2.19.0 scikit-learn pandas numpy matplotlib
+
+      - name: Run MLflow Project
+        run: mlflow run MLProject/ -P n_estimators=100 -P max_depth=20 --env-manager=local
+
+      - name: Verify artifacts exist
+        run: ls -la mlruns/
