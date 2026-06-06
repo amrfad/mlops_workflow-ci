@@ -30,3 +30,35 @@ jobs:
           name: mlflow-model-artifacts
           path: mlruns/
           retention-days: 30
+
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get Run ID
+        id: get_run
+        run: |
+          RUN_ID=$(python -c "
+          import mlflow
+          client = mlflow.tracking.MlflowClient()
+          runs = client.search_runs(experiment_ids=['0'])
+          print(runs[0].info.run_id)
+          ")
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Build Docker Image with MLflow
+        run: |
+          mlflow models build-docker \
+            -m "runs:/${{ steps.get_run.outputs.run_id }}/model" \
+            -n "${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model"
+
+      - name: Push to Docker Hub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model
+
+      - name: Save Docker Hub link
+        run: echo "https://hub.docker.com/r/${{ secrets.DOCKERHUB_USERNAME }}/cmapss-rul-model" > MLProject/docker_hub_link.txt
