@@ -23,3 +23,10 @@ jobs:
 
       - name: Verify artifacts exist
         run: ls -la mlruns/
+
+      - name: Upload model artifacts to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-model-artifacts
+          path: mlruns/
+          retention-days: 30
